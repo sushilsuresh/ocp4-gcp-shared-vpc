@@ -1,0 +1,10 @@
+== Deploy OpenShift 4.x in GCP to a Shared VPC
+
+You need to have an Organisation setup in your GCP account, to be able to setup
+and use link:https://cloud.google.com/vpc/docs/shared-vpc[Shared VPC] networks.
+do check the linked documentation for the same. The documentation is going to
+assume that we start from scratch, with a Google cloud that has a organisation
+setup but no projects or shared VPCs. In realily as consultant you will be
+walking into a environment where all of this prereqs are already in place.
+
+
