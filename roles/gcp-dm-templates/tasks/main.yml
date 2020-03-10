@@ -1,0 +1,12 @@
+---
+# tasks file for gcp-dm-templates
+
+# - name: Include task to generate vpc dm templates
+#   include_tasks: vpc.yml
+#   when:
+#     - template_name is search('vpc')
+
+# - name: Include task to generate infra dm templates
+#   include_tasks: infra.yml
+#   when:
+#     - template_name is search('infra')

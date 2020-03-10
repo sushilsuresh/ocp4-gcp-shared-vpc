@@ -1,0 +1,14 @@
+imports:
+- path: 03_security.py
+
+resources:
+- name: {{ INFRA_ID }}-security
+  type: 03_security.py
+  properties:
+    infra_id: '{{ INFRA_ID }}'
+    region: '{{ REGION }}'
+
+    cluster_network: '{{ CLUSTER_NETWORK }}'
+    network_cidr: '{{ NETWORK_CIDR }}'
+    master_nat_ip: '{{ MASTER_NAT_IP }}'
+    worker_nat_ip: '{{ WORKER_NAT_IP }}'

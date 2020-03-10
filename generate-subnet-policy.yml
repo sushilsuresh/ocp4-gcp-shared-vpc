@@ -1,0 +1,49 @@
+---
+
+- name: Generate Subnet Policy json files.
+  hosts: localhost
+  vars:
+    infra_id: "{{ lookup('env','INFRA_ID') }}"
+    region: "{{ lookup('env','REGION') }}"
+    service_project_sa: "{{ lookup('env', 'SERVICE_PROJECT_SA')}}"
+  tasks:
+
+    - name: Fail if any of the required env variables is empty
+      fail:
+        msg: "One of the required ENV Variables is not set."
+      when:
+        - not infra_id
+        - not region
+        - not service_project_sa
+
+    - name: Get etag for {{ infra_id }}-master-subnet
+      shell: >-
+        gcloud compute networks subnets
+        get-iam-policy {{ infra_id }}-master-subnet
+        --region {{ region }} --format json | jq .etag
+      register: reg_etag
+      changed_when: false
+
+    - name: Generate subnet policy for {{ infra_id }}-master-subnet
+      template:
+        src:  subnet-policy.json.j2
+        dest: "{{ infra_id }}-master-subnet.json"
+      vars:
+        subnet_etag: "{{ reg_etag.stdout }}"
+        service_account: "{{ service_project_sa }}"
+
+    - name: Get etag for {{ infra_id }}-worker-subnet
+      shell: >-
+        gcloud compute networks subnets
+        get-iam-policy {{ infra_id }}-worker-subnet
+        --region {{ region }} --format json | jq .etag
+      register: reg_etag
+      changed_when: false
+
+    - name: Generate subnet policy for {{ infra_id }}-worker-subnet
+      template:
+        src:  subnet-policy.json.j2
+        dest: "{{ infra_id }}-worker-subnet.json"
+      vars:
+        subnet_etag: "{{ reg_etag.stdout }}"
+        service_account: "{{ service_project_sa }}"

@@ -1,0 +1,43 @@
+# Tasks to generate infra deployment manager templates
+
+- name: Fail if any of the required env variable is empty
+  fail:
+    msg: "One of the required ENV Variables is not set."
+  when:
+    - INFRA_ID == "" or
+      REGION == "" or
+      CLUSTER_NETWORK == "" or
+      ZONE_0 == "" or
+      CONTROL_SUBNET == "" or
+      CLUSTER_IMAGE == "" or
+      BOOTSTRAP_IGN == ""
+
+- name: Create 04_bootstrap.yaml
+  template:
+    src: 04_bootstrap.yaml.j2
+    dest: "{{ dm_templates_dir }}/04_bootstrap.yaml"
+
+- name: Download 04_bootstrap.py deployment manager template
+  get_url:
+    url: "{{ dm_template_bootstrap }}"
+    dest: "{{ dm_templates_dir }}/04_bootstrap.py"
+
+- name: Create 04_bootstrap_patched.yaml
+  template:
+    src: 04_bootstrap_patched.yaml.j2
+    dest: "{{ dm_templates_dir }}/04_bootstrap_patched.yaml"
+
+- name: Copy 04_bootstrap_patched.py deployment manager template
+  copy:
+    src: 04_bootstrap_patched.py
+    dest: "{{ dm_templates_dir }}/04_bootstrap_patched.py"
+
+- name: Create 04_bootstrap_host_project.yaml
+  template:
+    src: 04_bootstrap_host_project.yaml.j2
+    dest: "{{ dm_templates_dir }}/04_bootstrap_host_project.yaml"
+
+- name: Copy 04_bootstrap_host_project.py deployment manager template
+  copy:
+    src: 04_bootstrap_host_project.py
+    dest: "{{ dm_templates_dir }}/04_bootstrap_host_project.py"

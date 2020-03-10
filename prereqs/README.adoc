@@ -1,0 +1,155 @@
+=== Setting up the GCP Projects
+
+Getting your organisation id
+
+----
+gcloud organizations list
+----
+Pick project names for your Host Project and Service Project.
+Host Project is the project where the Shared VPC will be hosted
+Service Project is the project where we will deploy OpenShift.
+
+NOTE: Make sure you run the below command fro the git repo's root directory.
+----
+export REPO_HOME=`pwd`
+export BASE_DOMAIN='xvpc.mock-up.net'
+export BASE_DOMAIN_ZONE_NAME='openshift'
+export ORG_ID='1234567890'
+export HOST_PROJECT='master-project-270422'
+export SERVICE_PROJECT='openshift-270422'
+export HOST_PROJECT_SA="automation@${HOST_PROJECT}.iam.gserviceaccount.com"
+export SERVICE_PROJECT_SA="automation@${SERVICE_PROJECT}.iam.gserviceaccount.com"
+----
+The Host and Service project ids need to be unique in GPC. The best way to find
+out if the project id you are going to use is unique is by going to google
+cloud console an click on new project and typein the name you want to use. If
+it is not unique, it will append number at the end and suggest a unique project
+id for you. That is how I got the above project ids.
+
+I like to make sure my env vars are setup propely so often echo it out.
+Redundant but for my sanity. It comes in really handy when you export the
+output of a command.
+----
+echo ORG_ID=${ORG_ID}
+echo HOST_PROJECT=${HOST_PROJECT}
+echo SERVICE_PROJECT=${SERVICE_PROJECT}
+----
+Create new projects under the organisaiton.
+----
+gcloud projects create ${HOST_PROJECT} --organization=${ORG_ID}
+gcloud projects create ${SERVICE_PROJECT} --organization=${ORG_ID}
+----
+Projects need billing accounts associated with them before they can be used.
+----
+gcloud alpha billing accounts list
+
+ACCOUNT_ID            NAME                OPEN  MASTER_ACCOUNT_ID
+XXXXXX-XXXXXX-XXXXXX  My Billing Account  True
+----
+Exporting the Billing account id.
+----
+export BILLING_ID='XXXXXX-XXXXXX-XXXXXX'
+echo BILLING_ID=${BILLING_ID}
+----
+Enable billing for your projects.
+----
+gcloud beta billing projects link ${HOST_PROJECT} --billing-account=${BILLING_ID}
+gcloud beta billing projects link ${SERVICE_PROJECT} --billing-account=${BILLING_ID}
+----
+Enable the various API's for your account. This is not a hard an farst vetted
+set of apis. There could be an api that is enabled which is not required.
+----
+for project in ${HOST_PROJECT} ${SERVICE_PROJECT} ; do
+  echo "Enabling services for Project - ${project}"
+  gcloud services enable compute.googleapis.com --project ${project}
+  gcloud services enable cloudapis.googleapis.com --project ${project}
+  gcloud services enable cloudresourcemanager.googleapis.com --project ${project}
+  gcloud services enable dns.googleapis.com --project ${project}
+  gcloud services enable iamcredentials.googleapis.com --project ${project}
+  gcloud services enable iam.googleapis.com --project ${project}
+  gcloud services enable servicemanagement.googleapis.com --project ${project}
+  gcloud services enable serviceusage.googleapis.com --project ${project}
+  gcloud services enable storage-api.googleapis.com --project ${project}
+  gcloud services enable storage-component.googleapis.com --project ${project}
+  gcloud services enable deploymentmanager.googleapis.com --project ${project}
+done
+----
+Create service account, service account keys, and roles for both the projects.
+I am going to save the json files or the account keys in the "keys" folder
+within the github repo.
+----
+gcloud iam service-accounts create automation --project ${HOST_PROJECT} --display-name automation
+gcloud iam service-accounts keys create ${REPO_HOME}/keys/${HOST_PROJECT}-sa.json --project ${HOST_PROJECT} --iam-account ${HOST_PROJECT_SA}
+gcloud projects add-iam-policy-binding ${HOST_PROJECT} --member serviceAccount:${HOST_PROJECT_SA} --role roles/owner
+gcloud projects add-iam-policy-binding ${HOST_PROJECT} --member serviceAccount:${HOST_PROJECT_SA} --role roles/deploymentmanager.editor
+
+gcloud iam service-accounts create automation --project ${SERVICE_PROJECT} --display-name automation
+gcloud iam service-accounts keys create ${REPO_HOME}/keys/${SERVICE_PROJECT}-sa.json --project ${SERVICE_PROJECT} --iam-account ${SERVICE_PROJECT_SA}
+gcloud projects add-iam-policy-binding ${SERVICE_PROJECT} --member serviceAccount:${SERVICE_PROJECT_SA} --role roles/owner
+gcloud projects add-iam-policy-binding ${SERVICE_PROJECT} --member serviceAccount:${SERVICE_PROJECT_SA} --role roles/deploymentmanager.editor
+----
+The service account could not create new deployments. I had to grant the
+service account an additional role of roles/deploymentmanager.editor
+TODO: this may not be required. doublecheck and remove
+
+=== Generate SSH keys for the installation
+I am using ed25519 keys and empty passphrase for my lab environment. Just for
+my ease.
+----
+ssh-keygen -t ed25519 -C "ocp4-gcp-shared-vpc@example.com" -f ${REPO_HOME}/keys/gcp-shared-vpc_ed25519 -q -N ""
+----
+
+=== Setup Base Domain for OpenShift
+The OpenShift installer expects a Base Domain to be setup in your GCP project
+that it can use for the DNS entires. I am going to use the same ENV variables
+discussed in the OpenShift documentation BASE_DOMAIN and BASE_DOMAIN_ZONE_NAME
+
+----
+gcloud auth activate-service-account --key-file=${REPO_HOME}/keys/${SERVICE_PROJECT}-sa.json
+gcloud config set project ${SERVICE_PROJECT}
+
+# Create the DNS zone
+gcloud dns managed-zones create ${BASE_DOMAIN_ZONE_NAME} --description="OCP4 GCP Shared VPC" --dns-name=${BASE_DOMAIN} --visibility=public
+
+# Describe the newly created DNS zone
+gcloud dns managed-zones describe openshift
+
+creationTime: '2020-03-08T14:20:07.188Z'
+description: OCP4 GCP Shared VPC
+dnsName: xvpc.mock-up.net.
+id: '7679931472249422854'
+kind: dns#managedZone
+name: openshift
+nameServers:
+- ns-cloud-d1.googledomains.com.
+- ns-cloud-d2.googledomains.com.
+- ns-cloud-d3.googledomains.com.
+- ns-cloud-d4.googledomains.com.
+visibility: public
+----
+
+Make sure you update your DNS records or Registrar so that the NS records for
+the basedomain points to the nameservers listed above. In my case, I already
+had a domain mock-up.net. I just deligated the subdomain xvpc.mock-up.net to
+the google nameservers.
+
+Validating that the Base Domain is pointing to the Google DNS servers.
+
+----
+dig -t ns +short xvpc.mock-up.net
+
+ns-cloud-d1.googledomains.com.
+ns-cloud-d2.googledomains.com.
+ns-cloud-d3.googledomains.com.
+ns-cloud-d4.googledomains.com.
+----
+
+=== Enable Shared VPC for the Host Project
+
+----
+gcloud auth activate-service-account --key-file=${REPO_HOME}/keys/${HOST_PROJECT}-sa.json
+gcloud config set project ${HOST_PROJECT}
+
+# Enable shared vpc
+gcloud compute shared-vpc enable ${HOST_PROJECT}
+----

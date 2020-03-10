@@ -1,0 +1,11 @@
+---
+# defaults file for gcp-dm-templates
+
+dm_template_release: 'release-4.3'
+
+dm_template_vpc: "https://raw.githubusercontent.com/openshift/installer/{{ dm_template_release }}/upi/gcp/01_vpc.py"
+dm_template_infra: "https://raw.githubusercontent.com/openshift/installer/{{ dm_template_release }}/upi/gcp/02_infra.py"
+dm_template_security: "https://raw.githubusercontent.com/openshift/installer/{{ dm_template_release }}/upi/gcp/03_security.py"
+dm_template_bootstrap: "https://raw.githubusercontent.com/openshift/installer/{{ dm_template_release }}/upi/gcp/04_bootstrap.py"
+dm_template_control_plane: "https://raw.githubusercontent.com/openshift/installer/{{ dm_template_release }}/upi/gcp/05_control_plane.py"
+dm_template_worker: "https://raw.githubusercontent.com/openshift/installer/{{ dm_template_release }}/upi/gcp/06_worker.py"

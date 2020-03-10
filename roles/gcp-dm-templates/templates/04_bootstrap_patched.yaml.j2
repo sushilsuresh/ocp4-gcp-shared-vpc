@@ -1,0 +1,18 @@
+imports:
+- path: 04_bootstrap_patched.py
+
+resources:
+- name: cluster-bootstrap
+  type: 04_bootstrap_patched.py
+  properties:
+    infra_id: '{{ INFRA_ID }}'
+    region: '{{ REGION }}'
+    zone: '{{ ZONE_0 }}'
+
+    cluster_network: '{{ CLUSTER_NETWORK }}'
+    control_subnet: '{{ CONTROL_SUBNET }}'
+    image: '{{ CLUSTER_IMAGE }}'
+    machine_type: 'n1-standard-4'
+    root_volume_size: '128'
+
+    bootstrap_ign: '{{ BOOTSTRAP_IGN }}'

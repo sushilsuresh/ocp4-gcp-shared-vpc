@@ -1,0 +1,4 @@
+---
+# vars file for gcp-dm-templates
+
+dm_templates_dir: "{{ inventory_dir }}/dm-templates"

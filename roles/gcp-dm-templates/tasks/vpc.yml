@@ -1,0 +1,28 @@
+# Create vpc deployment manager templates
+
+- name: Fail if any of the required env variable is empty
+  fail:
+    msg: "One of the required ENV Variables is not set."
+  when:
+    - INFRA_ID == "" or
+      REGION == "" or
+      MASTER_SUBNET_CIDR == "" or
+      WORKER_SUBNET_CIDR == ""
+
+- name: Create 01_vpc.yaml
+  template:
+    src: 01_vpc.yaml.j2
+    dest: "{{ dm_templates_dir }}/01_vpc.yaml"
+
+- name: Download 01_vpc.py deployment manager template
+  get_url:
+    url: "{{ dm_template_vpc }}"
+    dest: "{{ dm_templates_dir }}/01_vpc.py"
+
+# - name: Insert Souce comment to file
+#   lineinfile:
+#     path: "{{ dm_templates_dir }}/01_vpc.py"
+#     insertbefore: BOF
+#     line: "# Source: {{ dm_template_vpc }}"
+#
+# Commenting this out as it breaks the playbooks idempotency.

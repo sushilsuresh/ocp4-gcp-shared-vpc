@@ -1,0 +1,18 @@
+imports:
+- path: 06_worker.py
+
+resources:
+- name: 'w-a-0'
+  type: 06_worker.py
+  properties:
+    infra_id: '{{ INFRA_ID }}'
+    region: '{{ REGION }}'
+    zone: '{{ ZONE_0 }}'
+
+    compute_subnet: '{{ COMPUTE_SUBNET }}'
+    image: '{{ CLUSTER_IMAGE }}'
+    machine_type: 'n1-standard-2'
+    root_volume_size: '128'
+    service_account_email: '{{ WORKER_SERVICE_ACCOUNT_EMAIL }}'
+
+    ignition: '{{ WORKER_IGNITION | to_json }}'

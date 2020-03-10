@@ -1,0 +1,25 @@
+# Create vpc deployment manager templates
+
+- name: Fail if any of the required env variable is empty
+  fail:
+    msg: "One of the required ENV Variables is not set."
+  when:
+    - INFRA_ID == "" or
+      REGION == "" or
+      ZONE_0 == "" or
+      ZONE_1 == "" or
+      ZONE_2 == "" or
+      COMPUTE_SUBNET == "" or
+      CLUSTER_IMAGE == "" or
+      WORKER_SERVICE_ACCOUNT_EMAIL == "" or
+      WORKER_IGNITION == ""
+
+- name: Create 06_worker.yaml
+  template:
+    src: 06_worker.yaml.j2
+    dest: "{{ dm_templates_dir }}/06_worker.yaml"
+
+- name: Download 06_worker.py deployment manager template
+  get_url:
+    url: "{{ dm_template_worker }}"
+    dest: "{{ dm_templates_dir }}/06_worker.py"

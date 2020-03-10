@@ -1,0 +1,102 @@
+---
+
+- name: Generate Deployment Templates
+  hosts: localhost
+  vars:
+  tasks:
+
+    - name: Make sure we know which template to generate
+      fail:
+        msg:
+          - "Please specify a template using -e template_name=<template>"
+          - "Valid template names : [ vpc , infra ]"
+      when:
+        - template_name is not defined
+
+    - name: Generate DM templates for vpc
+      include_role:
+        name: gcp-dm-templates
+        tasks_from: "vpc"
+      vars:
+        INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
+        REGION: "{{ lookup('env','REGION') }}"
+        MASTER_SUBNET_CIDR: "{{ lookup('env','MASTER_SUBNET_CIDR') }}"
+        WORKER_SUBNET_CIDR: "{{ lookup('env','WORKER_SUBNET_CIDR') }}"
+      when:
+        - template_name is search('vpc')
+
+    - name: Generate DM templates for infra
+      include_role:
+        name: gcp-dm-templates
+        tasks_from: "infra"
+      vars:
+        INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
+        REGION: "{{ lookup('env','REGION') }}"
+        CLUSTER_NAME: "{{ lookup('env','CLUSTER_NAME') }}"
+        BASE_DOMAIN: "{{ lookup('env','BASE_DOMAIN') }}"
+        CLUSTER_NETWORK: "{{ lookup('env','CLUSTER_NETWORK') }}"
+      when:
+        - template_name is search('infra')
+
+    - name: Generate dm templates for seurity
+      include_role:
+        name: gcp-dm-templates
+        tasks_from: "security"
+      vars:
+        INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
+        REGION: "{{ lookup('env','REGION') }}"
+        CLUSTER_NETWORK: "{{ lookup('env','CLUSTER_NETWORK') }}"
+        NETWORK_CIDR: "{{ lookup('env','NETWORK_CIDR') }}"
+        MASTER_NAT_IP: "{{ lookup('env','MASTER_NAT_IP') }}"
+        WORKER_NAT_IP: "{{ lookup('env','WORKER_NAT_IP') }}"
+      when:
+        - template_name is search('security')
+
+    - name: Generate dm templates for bootstrap
+      include_role:
+        name: gcp-dm-templates
+        tasks_from: "bootstrap"
+      vars:
+        INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
+        REGION: "{{ lookup('env','REGION') }}"
+        CLUSTER_NETWORK: "{{ lookup('env','CLUSTER_NETWORK') }}"
+        ZONE_0: "{{ lookup('env','ZONE_0') }}"
+        CONTROL_SUBNET: "{{ lookup('env','CONTROL_SUBNET') }}"
+        CLUSTER_IMAGE: "{{ lookup('env','CLUSTER_IMAGE') }}"
+        BOOTSTRAP_IGN: "{{ lookup('env','BOOTSTRAP_IGN') }}"
+      when:
+        - template_name is search('bootstrap')
+
+    - name: Generate dm templates for control_plane
+      include_role:
+        name: gcp-dm-templates
+        tasks_from: "control_plane"
+      vars:
+        INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
+        REGION: "{{ lookup('env','REGION') }}"
+        ZONE_0: "{{ lookup('env','ZONE_0') }}"
+        ZONE_1: "{{ lookup('env','ZONE_1') }}"
+        ZONE_2: "{{ lookup('env','ZONE_2') }}"
+        CONTROL_SUBNET: "{{ lookup('env','CONTROL_SUBNET') }}"
+        CLUSTER_IMAGE: "{{ lookup('env','CLUSTER_IMAGE') }}"
+        MASTER_SERVICE_ACCOUNT_EMAIL: "{{ lookup('env','MASTER_SERVICE_ACCOUNT_EMAIL') }}"
+        MASTER_IGNITION: "{{ lookup('env','MASTER_IGNITION') }}"
+      when:
+        - template_name is search('control_plane')
+
+    - name: Generate dm templates for worker
+      include_role:
+        name: gcp-dm-templates
+        tasks_from: "worker"
+      vars:
+        INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
+        REGION: "{{ lookup('env','REGION') }}"
+        ZONE_0: "{{ lookup('env','ZONE_0') }}"
+        ZONE_1: "{{ lookup('env','ZONE_1') }}"
+        ZONE_2: "{{ lookup('env','ZONE_2') }}"
+        COMPUTE_SUBNET: "{{ lookup('env','COMPUTE_SUBNET') }}"
+        CLUSTER_IMAGE: "{{ lookup('env','CLUSTER_IMAGE') }}"
+        WORKER_SERVICE_ACCOUNT_EMAIL: "{{ lookup('env','WORKER_SERVICE_ACCOUNT_EMAIL') }}"
+        WORKER_IGNITION: "{{ lookup('env','WORKER_IGNITION') }}"
+      when:
+        - template_name is search('worker')

@@ -1,0 +1,12 @@
+imports:
+- path: 02_infra.py
+
+resources:
+- name: cluster-infra
+  type: 02_infra.py
+  properties:
+    infra_id: '{{ INFRA_ID }}'
+    region: '{{ REGION }}'
+
+    cluster_domain: '{{ CLUSTER_NAME }}.{{ BASE_DOMAIN }}'
+    cluster_network: '{{ CLUSTER_NETWORK }}'

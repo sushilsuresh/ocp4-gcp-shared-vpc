@@ -1,0 +1,22 @@
+# Tasks to generate infra deployment manager templates
+
+- name: Fail if any of the required env variable is empty
+  fail:
+    msg: "One of the required ENV Variables is not set."
+  when:
+    - INFRA_ID == "" or
+      REGION == "" or
+      CLUSTER_NETWORK == "" or
+      NETWORK_CIDR == "" or
+      MASTER_NAT_IP == "" or
+      WORKER_NAT_IP == ""
+
+- name: Create 03_security.yaml
+  template:
+    src: 03_security.yaml.j2
+    dest: "{{ dm_templates_dir }}/03_security.yaml"
+
+- name: Download 03_security.py deployment manager template
+  get_url:
+    url: "{{ dm_template_security }}"
+    dest: "{{ dm_templates_dir }}/03_security.py"

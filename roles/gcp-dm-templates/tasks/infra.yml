@@ -1,0 +1,41 @@
+# Tasks to generate infra deployment manager templates
+
+- name: Fail if any of the required env variable is empty
+  fail:
+    msg: "One of the required ENV Variables is not set."
+  when:
+    - INFRA_ID == "" or
+      REGION == "" or
+      CLUSTER_NAME == "" or
+      BASE_DOMAIN == "" or
+      CLUSTER_NETWORK == ""
+
+- name: Create 02_infra.yaml
+  template:
+    src: 02_infra.yaml.j2
+    dest: "{{ dm_templates_dir }}/02_infra.yaml"
+
+- name: Download 02_infra.py deployment manager template
+  get_url:
+    url: "{{ dm_template_infra }}"
+    dest: "{{ dm_templates_dir }}/02_infra.py"
+
+- name: Create 02_infra_patched.yaml
+  template:
+    src: 02_infra_patched.yaml.j2
+    dest: "{{ dm_templates_dir }}/02_infra_patched.yaml"
+
+- name: Copy 02_infra_patched.py deployment manager template
+  copy:
+    src: 02_infra_patched.py
+    dest: "{{ dm_templates_dir }}/02_infra_patched.py"
+
+- name: Create 02_infra_host_project.yaml
+  template:
+    src: 02_infra_host_project.yaml.j2
+    dest: "{{ dm_templates_dir }}/02_infra_host_project.yaml"
+
+- name: Copy 02_infra_host_project.py deployment manager template
+  copy:
+    src: 02_infra_host_project.py
+    dest: "{{ dm_templates_dir }}/02_infra_host_project.py"

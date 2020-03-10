@@ -1,0 +1,31 @@
+apiVersion: v1
+baseDomain: xvpc.mock-up.net
+compute:
+- hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 0
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: cluster-01
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineCIDR: 10.0.0.0/16
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  gcp:
+    projectID: openshift-270422
+    region: us-east4
+publish: External
+pullSecret: '{"auths":{"cloud.openshift.com":{...}}}'
+sshKey: |
+  ssh-ed25519 AAAAC3Nz ... ZDI1NTE5AAAAIA ocp4-gcp-shared-vpc@example.com

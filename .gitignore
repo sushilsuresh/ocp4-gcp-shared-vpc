@@ -1,0 +1,9 @@
+*.gz
+*.tar
+*.tgz
+*.tar.gz
+*.swp
+*.json
+install-dir
+openshift-install
+pull-secret.txt

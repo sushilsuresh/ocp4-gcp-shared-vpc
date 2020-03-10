@@ -1,0 +1,17 @@
+{
+  "bindings": [
+    {
+      "members": [ "serviceAccount:{{ service_account }}"],
+      "role": "roles/compute.networkUser"
+    },
+    {
+      "members": [ "serviceAccount:{{ service_account }}"],
+      "role": "roles/compute.networkAdmin"
+    },
+    {
+      "members": [ "serviceAccount:{{ service_account }}"],
+      "role": "roles/compute.securityAdmin"
+    }
+  ],
+  "etag": {{ subnet_etag }}
+}

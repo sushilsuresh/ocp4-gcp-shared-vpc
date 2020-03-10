@@ -1,0 +1,12 @@
+imports:
+- path: 01_vpc.py
+
+resources:
+- name: cluster-vpc
+  type: 01_vpc.py
+  properties:
+    infra_id: '{{ INFRA_ID }}'
+    region: '{{ REGION }}'
+
+    master_subnet_cidr: '{{ MASTER_SUBNET_CIDR }}'
+    worker_subnet_cidr: '{{ WORKER_SUBNET_CIDR }}'

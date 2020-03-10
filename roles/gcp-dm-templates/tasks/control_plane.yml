@@ -1,0 +1,25 @@
+# Create vpc deployment manager templates
+
+- name: Fail if any of the required env variable is empty
+  fail:
+    msg: "One of the required ENV Variables is not set."
+  when:
+    - INFRA_ID == "" or
+      REGION == "" or
+      ZONE_0 == "" or
+      ZONE_1 == "" or
+      ZONE_2 == "" or
+      CONTROL_SUBNET == "" or
+      CLUSTER_IMAGE == "" or
+      MASTER_SERVICE_ACCOUNT_EMAIL == "" or
+      MASTER_IGNITION == ""
+
+- name: Create 05_control_plane.yaml
+  template:
+    src: 05_control_plane.yaml.j2
+    dest: "{{ dm_templates_dir }}/05_control_plane.yaml"
+
+- name: Download 05_control_plane.py deployment manager template
+  get_url:
+    url: "{{ dm_template_control_plane }}"
+    dest: "{{ dm_templates_dir }}/05_control_plane.py"
